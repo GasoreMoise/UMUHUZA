@@ -8,6 +8,7 @@ import { errorHandler } from './middleware/error.middleware';
 import { swaggerSpec } from './config/swagger';
 import citizensRoutes from './modules/citizens/citizens.routes';
 import morgan from 'morgan';
+import agenciesRoutes from './modules/agencies/agencies.routes';
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.get('/health', (_, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/citizens', citizensRoutes);
+app.use('/api/agencies', agenciesRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
