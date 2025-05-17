@@ -1,23 +1,14 @@
 import { Request, Response } from 'express';
-const { validationResult } = require('express-validator');
+import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { PrismaClient, Prisma } from '@prisma/client';
-import { UserRole } from '@prisma/client';
 import crypto from 'crypto';
+const { validationResult } = require('express-validator');
 import { sendPasswordResetEmail } from '../utils/email.service';
 import { logPasswordResetAttempt, logSuspiciousActivity } from '../utils/logger';
 
 const prisma = new PrismaClient();
-
-interface PasswordReset {
-  id: string;
-  user_id: string;
-  token: string;
-  expires_at: Date;
-  created_at: Date;
-  used: boolean;
-}
+const JWT_SECRET = Buffer.from(process.env.JWT_SECRET || 'your-secret-key');
 
 /**
  * @swagger
@@ -110,8 +101,8 @@ export const register = async (req: Request, res: Response) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id },
-      Buffer.from(process.env.JWT_SECRET || 'your-secret-key'),
+      { userId: user.id, role: user.role },
+      JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' } as SignOptions
     );
 
@@ -205,8 +196,8 @@ export const login = async (req: Request, res: Response) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id },
-      Buffer.from(process.env.JWT_SECRET || 'your-secret-key'),
+      { userId: user.id, role: user.role },
+      JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' } as SignOptions
     );
 

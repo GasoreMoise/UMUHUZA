@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { CitizensService } from './citizens.service';
 import { CreateCitizenDto } from './dto/create-citizen.dto';
 import { UpdateCitizenDto } from './dto/update-citizen.dto';
+import { UserRole } from '@prisma/client';
 
 const citizensService = new CitizensService();
 
@@ -169,6 +170,66 @@ export const remove = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof Error) {
       return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * @swagger
+ * /api/citizens/profile:
+ *   get:
+ *     summary: Get authenticated citizen's profile
+ *     tags: [Citizens]
+ *     responses:
+ *       200:
+ *         description: Citizen profile retrieved successfully
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Citizen not found
+ */
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.userId) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    const citizen = await citizensService.findOne(req.user.userId.toString());
+    return res.json(citizen);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/**
+ * @swagger
+ * /api/citizens/admin:
+ *   post:
+ *     summary: Register a new admin user
+ *     tags: [Citizens]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCitizenDto'
+ *     responses:
+ *       201:
+ *         description: Admin user registered successfully
+ *       400:
+ *         description: Invalid input or email already registered
+ */
+export const registerAdmin = async (req: Request, res: Response) => {
+  try {
+    const createCitizenDto: CreateCitizenDto = req.body;
+    const admin = await citizensService.create(createCitizenDto, UserRole.ADMIN);
+    return res.status(201).json(admin);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(400).json({ message: error.message });
     }
     return res.status(500).json({ message: 'Internal server error' });
   }

@@ -1,13 +1,12 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole, Prisma } from '@prisma/client';
 import { CreateCitizenDto } from './dto/create-citizen.dto';
 import { UpdateCitizenDto } from './dto/update-citizen.dto';
 import bcrypt from 'bcryptjs';
-import { UserRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export class CitizensService {
-  async create(createCitizenDto: CreateCitizenDto) {
+  async create(createCitizenDto: CreateCitizenDto, role: UserRole = UserRole.CITIZEN) {
     const { password, ...citizenData } = createCitizenDto;
 
     // Check if email already exists
@@ -23,12 +22,12 @@ export class CitizensService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create citizen
+    // Create user with specified role
     const citizen = await prisma.user.create({
       data: {
         ...citizenData,
         password: hashedPassword,
-        role: UserRole.CITIZEN,
+        role,
       },
     });
 
@@ -40,12 +39,12 @@ export class CitizensService {
   async findAll(page = 1, limit = 10, search?: string) {
     const skip = (page - 1) * limit;
 
-    const where = {
+    const where: Prisma.UserWhereInput = {
       role: UserRole.CITIZEN,
       ...(search && {
         OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
         ],
       }),
     };
@@ -59,9 +58,7 @@ export class CitizensService {
           id: true,
           name: true,
           email: true,
-          phone: true,
-          address: true,
-          profilePicture: true,
+          role: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -87,9 +84,7 @@ export class CitizensService {
         id: true,
         name: true,
         email: true,
-        phone: true,
-        address: true,
-        profilePicture: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -129,9 +124,7 @@ export class CitizensService {
         id: true,
         name: true,
         email: true,
-        phone: true,
-        address: true,
-        profilePicture: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -3,13 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
-import { authRoutes } from './routes/auth.routes';
-import { citizenRoutes } from './routes/citizen.routes';
+import authRoutes from './routes/auth.routes';
 import { errorHandler } from './middleware/error.middleware';
 import { swaggerSpec } from './config/swagger';
 import citizensRoutes from './modules/citizens/citizens.routes';
+import morgan from 'morgan';
 
 const app = express();
+
+// Logging middleware
+app.use(morgan('dev'));
 
 // Security middleware
 app.use(helmet());
@@ -42,9 +45,15 @@ app.use('/api/auth/reset-password', passwordResetLimiter);
 
 // Body parser middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Health check endpoint
+app.get('/health', (_, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

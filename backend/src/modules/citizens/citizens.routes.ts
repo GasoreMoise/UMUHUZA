@@ -1,15 +1,15 @@
 import { Router } from 'express';
-import { register, findAll, findOne, update, remove } from './citizens.controller';
-import { authenticate } from '../../middleware/auth';
-import { authorize } from '../../middleware/authorize';
+import { register, findAll, findOne, update, remove, getProfile, registerAdmin } from './citizens.controller';
+import { authenticate, authorize } from '../../middleware/auth.middleware';
 
 const router = Router();
 
 // Public routes
 router.post('/', register);
+router.post('/admin', registerAdmin);
 
 // Protected routes
-router.get('/profile', authenticate, findOne);
+router.get('/profile', authenticate, getProfile);
 router.put('/profile', authenticate, update);
 
 // Admin only routes
