@@ -9,6 +9,8 @@ import { swaggerSpec } from './config/swagger';
 import citizensRoutes from './modules/citizens/citizens.routes';
 import morgan from 'morgan';
 import agenciesRoutes from './modules/agencies/agencies.routes';
+import categoriesRoutes from './modules/categories/categories.routes';
+import complaintsRoutes from './modules/complaints/complaints.routes';
 
 const app = express();
 
@@ -60,6 +62,8 @@ app.get('/health', (_, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/citizens', citizensRoutes);
 app.use('/api/agencies', agenciesRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/complaints', complaintsRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
